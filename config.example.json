@@ -1,0 +1,40 @@
+{
+  "_comment": "Copy to config.json and fill in. me / meAliases: who 'I' am in meeting transcripts; notMe: people easily mixed up with me (same first name). categories: key -> label, the Jira project it belongs to and name patterns (regexes, case-insensitive) that place a meeting or a ticket in it. projects: the projects whose trackers the worker keeps (tracker file relative to the schema-enigma clone, where a meeting block goes, the heading format) and an optional memory note that carries the go-live date. Windows: topN items in the brief; nearWorkingDays = 'near future'; upcomingDays = shown as upcoming; firstRunDays / minLookBackDays = how far back the worker reads meetings. jira: what `node pm/todo.js jira` reads (jql), which statuses count as waiting on others or as analysis, which Jira priorities are high, keys to ignore, and project -> category for projects no category names (else the summary is matched against the category patterns).",
+  "me": "<Your Name>",
+  "meAliases": ["<Your Name>", "<how transcripts shorten it, e.g. First L.>", "<your.email@insly.com>"],
+  "notMe": ["<a colleague with the same first name (their e-mail)> - a different person"],
+  "timeZone": "Europe/Tallinn",
+  "topN": 5,
+  "nearWorkingDays": 3,
+  "upcomingDays": 7,
+  "firstRunDays": 14,
+  "minLookBackDays": 3,
+  "categories": {
+    "internal": { "label": "Internal", "match": [] },
+    "client-a": { "label": "Client A", "project": "ABC", "match": ["client ?a"] },
+    "plugin": { "label": "schema-enigma plugin", "match": ["schema-?enigma", "plugin"] },
+    "tempo": { "label": "Tempo / time logging", "match": ["tempo", "worklog"] },
+    "admin": { "label": "Admin / HR", "match": ["1:1"] },
+    "other": { "label": "Other", "match": [] }
+  },
+  "projects": {
+    "ABC": {
+      "category": "client-a",
+      "tracker": {
+        "file": "studies/client-a/TRACKER.md",
+        "style": "after-last-section",
+        "anchor": "^## Meeting update \\(",
+        "heading": "## Meeting update (YYYY-MM-DD) - \"<meeting name>\" (Circleback `<meeting id>`, ~N min)"
+      },
+      "memoryNote": null
+    }
+  },
+  "jira": {
+    "jql": "assignee = currentUser() AND statusCategory != Done AND issuetype != Epic ORDER BY updated DESC",
+    "waitingStatuses": ["Ready for Demo", "In QA", "Waiting for Q/A", "Estimated/Needs approval", "On Hold", "Waiting for customer"],
+    "reviewStatuses": ["Analysis", "Needs estimation"],
+    "highPriorities": ["Highest", "High", "Critical", "Blocker"],
+    "ignoreKeys": [],
+    "projectCategories": {}
+  }
+}

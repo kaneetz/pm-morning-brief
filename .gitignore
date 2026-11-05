@@ -1,0 +1,8 @@
+# Personal files - each user's own, never committed
+config.json
+todos.json
+todos.json.tmp
+TODO.md
+briefs/
+inbox/
+*.bak
