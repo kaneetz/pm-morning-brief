@@ -14,8 +14,36 @@ settings and briefs stay on your computer (`.gitignore`).
 3. `node pm/todo.js` - an empty list the first time; `node pm/todo.js jira --dry-run` checks the Jira read.
 4. Morning worker: fill the placeholders in `scheduled-tasks/pm-morning-brief.md` and create the scheduled task from it
    (the comment at its top says how).
-5. Optional, the top 5 at every session start: in the clone's `.claude/settings.local.json` add a `SessionStart` hook
-   `node "$CLAUDE_PROJECT_DIR/pm/todo.js" top --hook`, and allow `Bash(node pm/todo.js)` and `Bash(node pm/todo.js:*)`.
+5. Optional, the top 5 at every session start: the session-start hook below.
+
+## Session-start hook
+
+Shows the top 5 (and what others owe you that is due) at the start of every Claude Code session in your
+schema-enigma clone, and tells Claude to list them at the top of its first reply.
+
+1. Check the output first: `node pm/todo.js top --hook` prints one line of JSON (`systemMessage` for you,
+   `additionalContext` for Claude). An error here means the hook will fail too - fix it first (usually a missing
+   `config.json`).
+2. In the clone's `.claude/settings.local.json` (yours, not committed), add this under `"hooks"` - next to any hooks
+   already there, not replacing them:
+
+   ```json
+   "SessionStart": [
+     { "hooks": [ { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/pm/todo.js\" top --hook", "timeout": 15 } ] }
+   ]
+   ```
+
+   Keep the `$CLAUDE_PROJECT_DIR/` prefix. A relative `node pm/todo.js` fails whenever the session's current folder is
+   not the clone root (e.g. after Claude has worked inside `pm/` or `tempo/`), and the hook then shows nothing - no
+   error in the chat.
+3. So Claude can run `todo.js` in a chat without asking each time, add `"Bash(node pm/todo.js)"` and
+   `"Bash(node pm/todo.js:*)"` to `"permissions"` -> `"allow"` in the same file. The hook itself needs no permission.
+4. Start a **new** session with the clone root as its folder: settings are read at session start, and the clone's
+   `.claude/` settings only apply to sessions opened in the clone root. The list shows as a "To-do" message at the top.
+
+Nothing shows? Run step 1 again, check the settings file is still valid JSON
+(`node -e "JSON.parse(require('fs').readFileSync('.claude/settings.local.json','utf8'))"` prints nothing when it is),
+and that the session's folder is the clone root, not `pm/` or a parent folder.
 
 ## How it connects
 
@@ -88,7 +116,7 @@ Meetings stay the main source; Jira catches what no meeting mentions.
 
 ## In a chat session
 
-A SessionStart hook (`node "$CLAUDE_PROJECT_DIR/pm/todo.js" top --hook`) prints the top 5 at the start of each session in this folder.
+The session-start hook (set-up above) prints the top 5 at the start of each session in the clone.
 
 Testing on a copy: put `pm/`, the tracker files and a `work/` copy of `change-review-projects.json` in a scratch
 folder, run with `INSLY_WORK_DIR=<scratch>/work PM_NO_MEMORY=1` so no real project status or memory note changes.
