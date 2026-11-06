@@ -575,10 +575,17 @@ function cmdDecision(s, pos, opt) {
   return `${p.client} ${id}: ${what === "drop" ? "dropped" : d.status}`;
 }
 function cmdNote(s, pos, opt) {
+  // `note <id> "..."` adds to that item's notes (as `edit <id> --notes`); otherwise the text goes to the brief's Notes
+  if (!opt.type && pos.length > 1 && /^#?\d+$/.test(pos[0]) && s.items.some((x) => x.id === Number(pos[0].replace("#", "")))) {
+    const it = byId(s, pos[0].replace("#", ""));
+    const text = clean(pos.slice(1).join(" "));
+    applyEdit(it, { notes: text });
+    return `Noted on ${line(it)}`;
+  }
   const text = clean(pos.join(" ") || readStdin());
   if (!text) throw new Error("note: the text.");
   s.log.push({ at: now(), type: "note", kind: opt.type || "note", text });
-  return "noted";
+  return "noted (in the brief's Notes - to add to an item: note <id> \"...\")";
 }
 
 // worker: today's and the coming days' meetings, with what to prepare
@@ -766,6 +773,7 @@ node pm/todo.js done <id...> | drop <id...> [--why "..."] | reopen <id> | snooze
 node pm/todo.js edit <id> [--title|--category|--due|--priority|--kind|--owner|--notes ...]
 node pm/todo.js show <id> | brief [--no-save]
 node pm/todo.js jira [--dry-run]       open Jira tickets assigned to me onto the list (read-only Jira)
+node pm/todo.js note <id> "..."        add to an item's notes (same as edit <id> --notes)
 Client profiles: decision --client <client> <id> agree|open|drop   (proposed decisions from the worker)
 Worker only: worker-start | ingest | tracker --project P --meeting ID | golive --project P --planned D
              --meeting "..." --note "..." | agenda | propose --client C | note [--type scope] "..." | brief --worker

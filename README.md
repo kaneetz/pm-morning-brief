@@ -80,6 +80,7 @@ node pm/todo.js list --category client-a --owner me
 node pm/todo.js add "Send the client the call summary" --category client-a --due mon --kind communicate
 node pm/todo.js done 12 14              mark done (drop 12 --why "..." / reopen 12 / snooze 12 +2wd)
 node pm/todo.js edit 12 --due 2026-11-05 --priority high
+node pm/todo.js note 12 "client confirmed"  add to item 12's notes (without an id: a line in the brief's Notes)
 node pm/todo.js jira [--dry-run]        open Jira tickets assigned to me onto the list (read-only Jira)
 ```
 
